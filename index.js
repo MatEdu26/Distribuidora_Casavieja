@@ -24,6 +24,7 @@ con los siguientes datos:
 
 const express = require('express');
 const app = express();
+const mo
 const port = 3000;
 
 app.use(express.json());
@@ -56,8 +57,10 @@ app.get('/', (req, res) => {
     })
 });
 
-app.get('/stock', (req, res) => {
-    res.send(stock);
+app.get('/productos', (req, res) => {
+    res.sendFile("./view/productos.html", {
+      root: __dirname,
+    });
 });
 
 app.post("/ingreso", (req, res) => {
