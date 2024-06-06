@@ -1,0 +1,16 @@
+{
+  "name": "api-evaluacion",
+  "version": "1.0.0",
+  "description": "evaluacion pweb2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matias Bassi",
+  "license": "ISC",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "express": "^4.19.2",
+    "mongodb": "^6.7.0"
+  }
+}
