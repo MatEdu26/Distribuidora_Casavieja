@@ -25,8 +25,10 @@ con los siguientes datos:
 const express = require("express");
 const app = express();
 const port = 3000;
+const mongoose = require("mongoose");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const { MONGO_USER, MONGO_PASS } = require("./config.js");
+const Product = require("./models/Product");
 
 const uri =
   "mongodb+srv://" +
@@ -42,6 +44,11 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  });
 
 async function run() {
   try {
@@ -81,15 +88,30 @@ let stock = [
 ];
 
 app.get("/", (req, res) => {
-  res.sendFile("./view/index.html", {
-    root: __dirname,
-  });
+  res.sendFile("./view/index.html");
 });
 
-app.get("/productos", (req, res) => {
-  res.sendFile("./view/productos.html", {
-    root: __dirname,
-  });
+async function mostrarTodo() {
+    return await Product.find({timeout: 30000}).exec();
+}
+
+app.get("/productos", async (req, res) => {
+  if (req.url.includes("productos")) {
+    const products = await mostrarTodo();
+    res.sendFile("./view/productos.html");
+  } else {
+    res.sendFile("./view/productos.html");
+  }
+});
+
+app.get('/productos/buscar', async (req, res) => {
+    const productName = req.query.name;
+    const product = await Product.findOne({ name: productName }).exec();
+    if (product) {
+      res.render('productos', { products: [product] });
+    } else {
+      res.send('Producto no encontrado');
+    }
 });
 
 app.post("/ingreso", (req, res) => {

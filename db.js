@@ -1,5 +1,6 @@
 const { MongoClient } = require("mongodb");
 const { MONGO_USER, MONGO_PASS } = require("./config.js");
+const Product = require('./models/Product');
 
 const uri =
   "mongodb+srv://" +

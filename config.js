@@ -1,7 +1,6 @@
-const {config} = require("conf.env");
 
-const MONGO_USER = process.env.MONGO_USER;
+const MONGO_USER = "mebassi87";
 
-const MONGO_PASS = process.env.MONGO_PASS;
+const MONGO_PASS = "131215022509";
 
 module.exports = {MONGO_USER, MONGO_PASS}
