@@ -1,8 +1,12 @@
 const { MongoClient } = require("mongodb");
-const { MONGO_USER, MONGO_PASS } =  require("./config.js");
+const { MONGO_USER, MONGO_PASS } = require("./config.js");
 
 const uri =
-  "mongodb+srv://" + MONGO_USER + ":" + MONGO_PASS + "@cluster0.wzr8ybs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+  "mongodb+srv://" +
+  MONGO_USER +
+  ":" +
+  MONGO_PASS +
+  "@cluster0.wzr8ybs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 const client = new MongoClient(uri);
 const database = client.db("db");
@@ -28,4 +32,4 @@ async function eliminar(nombre) {
   await productos.deleteOne({ nome: nome });
 }
 
-module.exports = { mostrarTodo, buscar, insertar, actualizar, eliminar }
+module.exports = { mostrarTodo, buscar, insertar, actualizar, eliminar };
