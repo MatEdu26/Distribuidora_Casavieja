@@ -27,94 +27,64 @@ const app = express();
 const port = 3000;
 const mongoose = require("mongoose");
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const { MONGO_USER, MONGO_PASS } = require("./config.js");
-const Product = require("./models/Product");
+const { MONGO_USER, MONGO_PASS, MONGO_URI } = require("./config.js");
+const Product = require("./models/Product.js");
+const { displayProducts } = require("./src/funcion_productos.js");
 
-const uri =
-  "mongodb+srv://" +
-  MONGO_USER +
-  ":" +
-  MONGO_PASS +
-  "@cluster0.wzr8ybs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+mongoose.connect(MONGO_URI);
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
-
-mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  });
-
-async function run() {
+async function connectToMongoDB() {
   try {
     // Conecta el cliente al servidor
-    await client.connect();
-    // Envia un ping para confirmar una conexión exitosa
-    await client.db("admin").command({ ping: 1 });
-    console.log("Conexion lograda con MongoDB!");
-  } finally {
-    // Asegura que el cliente se cerrará cuando termine/error
-    await client.close();
+    await mongoose.connect(MONGO_URI);
+    console.log("Conexión lograda con MongoDB!");
+  } catch (error) {
+    console.error("Error al conectar con MongoDB:", error);
+    throw error;
   }
 }
-run().catch(console.dir);
+
+connectToMongoDB();
 
 app.use(express.json());
 
-let stock = [
-  {
-    nombre: "cafe",
-    precio: 2000,
-    stock: 10,
-    id: 1,
-  },
-  {
-    nombre: "leche",
-    precio: 1900,
-    stock: 50,
-    id: 2,
-  },
-  {
-    nombre: "azucar",
-    precio: 1000,
-    stock: 60,
-    id: 3,
-  },
-];
-
 app.get("/", (req, res) => {
-  res.sendFile("./view/index.html");
+  res.sendFile(__dirname + "/src/index.html");
 });
 
 async function mostrarTodo() {
-    return await Product.find({timeout: 30000}).exec();
+  return await Product.find({ timeout: 30000 }).exec();
 }
 
 app.get("/productos", async (req, res) => {
-  if (req.url.includes("productos")) {
-    const products = await mostrarTodo();
-    res.sendFile("./view/productos.html");
-  } else {
-    res.sendFile("./view/productos.html");
+  try {
+    const productos = await mostrarTodo();
+    displayProducts(productos);
+    res.sendFile(__dirname + "/src/productos.html");
+  } catch (error) {
+    console.error("Error al obtener productos:", error);
+    res.status(500).json({ error: "Error al obtener productos" });
   }
 });
 
-app.get('/productos/buscar', async (req, res) => {
-    const productName = req.query.name;
-    const product = await Product.findOne({ name: productName }).exec();
-    if (product) {
-      res.render('productos', { products: [product] });
+app.get("/productos/buscar", async (req, res) => {
+  const productName = req.query.nombre;
+  try {
+    const products = await Product.find({
+      nombre: { $regex: productName, $options: "i" },
+    }).exec();
+    if (products.length > 0) {
+      res.json(products);
     } else {
-      res.send('Producto no encontrado');
+      res.status(404).json({ error: "Producto no encontrado" });
     }
+  } catch (error) {
+    console.error("Error al buscar producto:", error);
+    res.status(500).json({ error: "Error al buscar producto" });
+  }
 });
 
-app.post("/ingreso", (req, res) => {
+app.post("/carga", (req, res) => {
   const nuevoProducto = {
     nombre: req.body.nombre || "sin_nombre",
     precio: req.body.precio || 0,

@@ -1,5 +1,6 @@
+const mongoose = require("mongoose");
 const { MongoClient } = require("mongodb");
-const { MONGO_USER, MONGO_PASS } = require("./config.js");
+const { MONGO_USER, MONGO_PASS } = require("./config");
 const Product = require('./models/Product');
 
 const uri =
@@ -10,14 +11,14 @@ const uri =
   "@cluster0.wzr8ybs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 const client = new MongoClient(uri);
-const database = client.db("db");
+const database = client.db("<Productos>");
 const productos = database.collection("productos");
 
 async function mostrarTodo() {
   return await productos.find({}).toArray();
 }
 
-async function buscar(nome) {
+async function buscar(nombre) {
   return await productos.findOne({ nombre: nombre });
 }
 
