@@ -29,38 +29,49 @@ const mongoose = require("mongoose");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const { MONGO_USER, MONGO_PASS, MONGO_URI } = require("./config.js");
 const Product = require("./models/Product.js");
-const { displayProducts } = require("./src/funcion_productos.js");
+const { mostrarTodo } = require("./db.js");
+const { displayProducts } = require("./public/funcion_productos.js");
 
-mongoose.connect(MONGO_URI);
-
-async function connectToMongoDB() {
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(MONGO_URI, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  },
+});
+async function run() {
   try {
-    // Conecta el cliente al servidor
-    await mongoose.connect(MONGO_URI);
-    console.log("Conexión lograda con MongoDB!");
-  } catch (error) {
-    console.error("Error al conectar con MongoDB:", error);
-    throw error;
+    // Connect the client to the server	(optional starting in v4.7)
+    await client.connect();
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
   }
 }
+run().catch(console.dir);
 
-connectToMongoDB();
-
+app.use(express.static("./public"));
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/src/index.html");
+  res.sendFile("./public/index.html", {
+    root: __dirname,
+  });
 });
-
-async function mostrarTodo() {
-  return await Product.find({ timeout: 30000 }).exec();
-}
 
 app.get("/productos", async (req, res) => {
   try {
     const productos = await mostrarTodo();
     displayProducts(productos);
-    res.sendFile(__dirname + "/src/productos.html");
+    res.sendFile("./public/productos.html", {
+      root: __dirname,
+    });
   } catch (error) {
     console.error("Error al obtener productos:", error);
     res.status(500).json({ error: "Error al obtener productos" });
